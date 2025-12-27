@@ -3,12 +3,14 @@ services:
     restart: always
     image: "postgres:16"
     ports:
-      - "5432"
+      - "5432:5432"
     environment:
-      POSTGRES_DB: thingsboard
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: thingsboard
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
   kafka:
     restart: always
     image: bitnamilegacy/kafka:4.0
