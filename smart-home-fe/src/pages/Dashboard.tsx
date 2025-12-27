@@ -15,31 +15,18 @@ import {
     Typography,
     Grid,
     Box,
-    AppBar,
-    Toolbar,
-    IconButton,
-    Button,
 } from '@mui/material';
-import { Brightness4, Brightness7, Logout } from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { RoomCard } from '../components/RoomCard';
 import { AlertBanner } from '../components/AlertBanner';
 import { HomeSummary } from '../components/HomeSummary';
 import type { RoomWithTelemetry, Alert, HomeStats } from '../types';
 
-interface DashboardProps {
-    darkMode: boolean;
-    onToggleDarkMode: () => void;
-}
-
-export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode }) => {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
+export const Dashboard: React.FC = () => {
     const [rooms, setRooms] = useState<RoomWithTelemetry[]>([]);
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
 
     useEffect(() => {
         loadRooms();
@@ -56,35 +43,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode
                 if (room.telemetry?.fire) {
                     newAlerts.push({
                         id: `fire-${room.id}`,
+                        homeId: 1,
                         type: 'fire',
                         message: 'Fire detected',
                         roomId: room.id,
                         roomName: room.name,
                         timestamp: new Date().toISOString(),
                         severity: 'critical',
+                        isActive: true,
                     });
                 }
                 if (room.telemetry?.temperature && room.telemetry.temperature > 28) {
                     newAlerts.push({
                         id: `temp-${room.id}`,
+                        homeId: 1,
                         type: 'temperature',
                         message: 'High temperature detected',
                         roomId: room.id,
                         roomName: room.name,
                         timestamp: new Date().toISOString(),
                         severity: 'warning',
+                        isActive: true,
                     });
                 }
                 // Check for offline devices (no telemetry)
                 if (!room.telemetry) {
                     newAlerts.push({
                         id: `offline-${room.id}`,
+                        homeId: 1,
                         type: 'offline',
                         message: 'Device offline',
                         roomId: room.id,
                         roomName: room.name,
                         timestamp: new Date().toISOString(),
                         severity: 'warning',
+                        isActive: true,
                     });
                 }
             });
@@ -96,26 +89,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode
         }
     };
 
-    const handleLightChange = (roomId: number, newState: 'on' | 'off') => {
+    const handleLightChange = async (roomId: number, newState: 'on' | 'off') => {
         // Update local state optimistically
-        setRooms((prevRooms) =>
-            prevRooms.map((room) =>
-                room.id === roomId
+        setRooms(prevRooms =>
+            prevRooms.map(room =>
+                room.id === roomId && room.telemetry
                     ? {
                         ...room,
                         telemetry: {
-                            ...room.telemetry!,
+                            ...room.telemetry,
                             light: newState,
                         },
                     }
                     : room
             )
         );
-    };
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
     };
 
     // Calculate home statistics
@@ -133,28 +121,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            {/* App Bar */}
-            <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Smart Home Dashboard
-                    </Typography>
-
-                    <Typography variant="body2" sx={{ mr: 2 }}>
-                        {user?.full_name || user?.email}
-                    </Typography>
-
-                    <IconButton color="inherit" onClick={onToggleDarkMode}>
-                        {darkMode ? <Brightness7 /> : <Brightness4 />}
-                    </IconButton>
-
-                    <Button color="inherit" startIcon={<Logout />} onClick={handleLogout}>
-                        Logout
-                    </Button>
-                </Toolbar>
-            </AppBar>
-
-            {/* Main Content */}
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                 {/* Home Summary */}
                 {!isLoading && <HomeSummary stats={homeStats} />}

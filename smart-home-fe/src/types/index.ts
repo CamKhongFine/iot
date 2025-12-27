@@ -15,6 +15,8 @@ export interface Home {
   description?: string;
   address?: string;
   owner_id: number;
+  role: 'owner' | 'admin' | 'member' | 'guest';
+  type: 'house' | 'apartment' | 'vacation' | 'commercial' | 'other';
 }
 
 export interface Room {
@@ -56,12 +58,14 @@ export interface RoomWithTelemetry extends Room {
 
 export interface Alert {
   id: string;
-  type: 'fire' | 'offline' | 'temperature';
+  homeId: number;
+  type: 'fire' | 'offline' | 'temperature' | 'motion' | 'door';
   message: string;
   roomId: number;
   roomName: string;
   timestamp: string;
   severity: 'critical' | 'warning' | 'info';
+  isActive: boolean;
 }
 
 export interface LoginCredentials {
@@ -85,4 +89,76 @@ export interface HomeStats {
 export interface DeviceStatus {
   isOnline: boolean;
   lastSeen?: string;
+}
+
+// Automation types
+export interface Scene {
+  id: number;
+  name: string;
+  description?: string;
+  homeId: number;
+  actions: SceneAction[];
+  isActive: boolean;
+}
+
+export interface SceneAction {
+  deviceId: number;
+  action: 'turn_on' | 'turn_off' | 'set_value';
+  value?: any;
+}
+
+export interface AutomationRule {
+  id: number;
+  name: string;
+  description?: string;
+  homeId: number;
+  trigger: RuleTrigger;
+  conditions: RuleCondition[];
+  actions: RuleAction[];
+  isActive: boolean;
+}
+
+export interface RuleTrigger {
+  type: 'motion' | 'door' | 'temperature' | 'fire' | 'time';
+  deviceId?: number;
+  value?: any;
+  time?: string;
+}
+
+export interface RuleCondition {
+  type: 'device_state' | 'time_range' | 'temperature_range';
+  deviceId?: number;
+  operator: 'equals' | 'greater_than' | 'less_than' | 'between';
+  value: any;
+}
+
+export interface RuleAction {
+  type: 'device_control' | 'notification';
+  deviceId?: number;
+  action: string;
+  value?: any;
+  message?: string;
+}
+
+// Home member types
+export interface HomeMember {
+  id: number;
+  userId: number;
+  homeId: number;
+  role: 'owner' | 'admin' | 'member' | 'guest';
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    full_name?: string;
+  };
+  joinedAt: string;
+}
+
+// Navigation types
+export interface NavItem {
+  text: string;
+  path: string;
+  icon: string;
+  requiresRole?: ('owner' | 'admin' | 'member' | 'guest')[];
 }
