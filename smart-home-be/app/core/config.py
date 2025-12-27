@@ -25,7 +25,9 @@ class Settings(BaseSettings):
     # ==========================================
     # Database Settings (PostgreSQL)
     # ==========================================
-    database_url: str = "postgresql+asyncpg://user:password@localhost:5432/smart_home"
+    # Connection to the smarthome_backend database
+    # Created automatically by init-db.sql in docker-compose
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/smarthome_backend"
     
     # ==========================================
     # JWT Authentication (Web Users)

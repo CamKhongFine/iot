@@ -73,3 +73,16 @@ export interface AuthResponse {
   access_token: string;
   token_type: string;
 }
+
+export interface HomeStats {
+  totalRooms: number;
+  onlineDevices: number;
+  offlineDevices: number;
+  safetyStatus: 'safe' | 'warning' | 'critical';
+  activeAlerts: number;
+}
+
+export interface DeviceStatus {
+  isOnline: boolean;
+  lastSeen?: string;
+}

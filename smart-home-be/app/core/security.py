@@ -4,14 +4,30 @@ Security utilities for authentication and password hashing.
 
 from datetime import datetime, timedelta
 from typing import Optional
+import hashlib
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from app.core.config import get_settings
 
 settings = get_settings()
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def _prepare_password(password: str) -> bytes:
+    """
+    Prepare password for bcrypt hashing.
+    
+    Always hash with SHA256 first to ensure consistent length and avoid
+    bcrypt's 72-byte limit. This produces a 64-character hex string.
+    
+    Args:
+        password: Plain text password
+        
+    Returns:
+        SHA256 hash of password as bytes (64 characters, well under 72 bytes)
+    """
+    # Always hash with SHA256 to ensure consistent length and avoid bcrypt limit
+    sha256_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+    return sha256_hash.encode('utf-8')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -25,12 +41,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    prepared_password = _prepare_password(plain_password)
+    return bcrypt.checkpw(prepared_password, hashed_password.encode('utf-8'))
 
 
 def get_password_hash(password: str) -> str:
     """
-    Hash a password using bcrypt.
+    Hash a password using SHA256 + bcrypt.
+    
+    First hashes with SHA256 to ensure consistent length and compatibility
+    with bcrypt's 72-byte limit, then applies bcrypt for secure storage.
     
     Args:
         password: Plain text password
@@ -38,7 +58,10 @@ def get_password_hash(password: str) -> str:
     Returns:
         Hashed password
     """
-    return pwd_context.hash(password)
+    prepared_password = _prepare_password(password)
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(prepared_password, salt)
+    return hashed.decode('utf-8')
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

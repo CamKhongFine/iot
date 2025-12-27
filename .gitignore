@@ -22,6 +22,11 @@ ENV/
 # FastAPI / ASGI
 *.log
 
+# IDEs
+.vscode/
+.idea/
+*.swp
+
 # Testing
 .coverage
 .coverage.*

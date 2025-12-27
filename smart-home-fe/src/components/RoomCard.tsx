@@ -55,10 +55,24 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onLightChange }) => {
             onClick={handleCardClick}
         >
             <CardContent>
-                {/* Room Name */}
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    {room.name}
-                </Typography>
+                {/* Room Name with Device Status */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        {room.name}
+                    </Typography>
+                    {telemetry && (
+                        <Box
+                            sx={{
+                                width: 10,
+                                height: 10,
+                                borderRadius: '50%',
+                                bgcolor: 'success.main',
+                                boxShadow: '0 0 8px rgba(76, 175, 80, 0.6)',
+                            }}
+                            title="Device Online"
+                        />
+                    )}
+                </Box>
 
                 {/* Fire Alert - CRITICAL */}
                 {telemetry?.fire && (

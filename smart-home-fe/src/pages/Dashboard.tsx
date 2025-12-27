@@ -26,7 +26,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { RoomCard } from '../components/RoomCard';
 import { AlertBanner } from '../components/AlertBanner';
-import type { RoomWithTelemetry, Alert } from '../types';
+import { HomeSummary } from '../components/HomeSummary';
+import type { RoomWithTelemetry, Alert, HomeStats } from '../types';
 
 interface DashboardProps {
     darkMode: boolean;
@@ -74,6 +75,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode
                         severity: 'warning',
                     });
                 }
+                // Check for offline devices (no telemetry)
+                if (!room.telemetry) {
+                    newAlerts.push({
+                        id: `offline-${room.id}`,
+                        type: 'offline',
+                        message: 'Device offline',
+                        roomId: room.id,
+                        roomName: room.name,
+                        timestamp: new Date().toISOString(),
+                        severity: 'warning',
+                    });
+                }
             });
             setAlerts(newAlerts);
         } catch (error) {
@@ -105,6 +118,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode
         navigate('/login');
     };
 
+    // Calculate home statistics
+    const homeStats: HomeStats = {
+        totalRooms: rooms.length,
+        onlineDevices: rooms.filter(r => r.telemetry).length,
+        offlineDevices: rooms.filter(r => !r.telemetry).length,
+        safetyStatus: alerts.some(a => a.type === 'fire')
+            ? 'critical'
+            : alerts.length > 0
+                ? 'warning'
+                : 'safe',
+        activeAlerts: alerts.length,
+    };
+
     return (
         <Box sx={{ flexGrow: 1 }}>
             {/* App Bar */}
@@ -130,11 +156,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode
 
             {/* Main Content */}
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                {/* Home Summary */}
+                {!isLoading && <HomeSummary stats={homeStats} />}
+
                 {/* Alerts */}
                 <AlertBanner alerts={alerts} />
 
                 {/* Page Title */}
-                <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
                     My Rooms
                 </Typography>
 
@@ -144,7 +173,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ darkMode, onToggleDarkMode
                 ) : (
                     <Grid container spacing={3}>
                         {rooms.map((room) => (
-                            <Grid item xs={12} sm={6} md={4} key={room.id}>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={room.id}>
                                 <RoomCard room={room} onLightChange={handleLightChange} />
                             </Grid>
                         ))}
