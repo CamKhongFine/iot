@@ -108,23 +108,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 })}
             </List>
 
-            {/* Footer Info */}
-            {currentHome && (
-                <>
-                    <Divider />
-                    <Box sx={{ px: 2, py: 1.5, bgcolor: 'action.hover' }}>
-                        <Typography variant="caption" color="text.secondary" display="block">
-                            Current Home
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {currentHome.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            Role: {currentHome.role.charAt(0).toUpperCase() + currentHome.role.slice(1)}
-                        </Typography>
-                    </Box>
-                </>
-            )}
         </Box>
     );
 
