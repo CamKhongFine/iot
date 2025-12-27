@@ -42,7 +42,7 @@ python -m venv .venv
 
 # Activate virtual environment
 # Windows (PowerShell):
-.venv\Scripts\Activate.ps1
+.venv\Scripts\avtivate
 # Linux/Mac:
 # source .venv/bin/activate
 
